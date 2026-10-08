@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { logout } from '@/app/logout/actions'
 import { deleteFood } from '@/app/food/actions'
 import { deleteExercise } from '@/app/exercise/actions'
+import BottomNav from '@/components/BottomNav'
 
 export const instant = false
 
@@ -107,7 +108,9 @@ export default async function DashboardPage({
     exercises?.reduce(
       (sum, exercise) =>
         sum +
-        Number(exercise.calories_burned || 0),
+        Number(
+          exercise.calories_burned || 0
+        ),
       0
     ) ?? 0
 
@@ -121,22 +124,26 @@ export default async function DashboardPage({
 
   const breakfast =
     foods?.filter(
-      (food) => food.meal_type === 'breakfast'
+      (food) =>
+        food.meal_type === 'breakfast'
     ) ?? []
 
   const lunch =
     foods?.filter(
-      (food) => food.meal_type === 'lunch'
+      (food) =>
+        food.meal_type === 'lunch'
     ) ?? []
 
   const dinner =
     foods?.filter(
-      (food) => food.meal_type === 'dinner'
+      (food) =>
+        food.meal_type === 'dinner'
     ) ?? []
 
   const snacks =
     foods?.filter(
-      (food) => food.meal_type === 'snack'
+      (food) =>
+        food.meal_type === 'snack'
     ) ?? []
 
   const currentWeight =
@@ -160,7 +167,6 @@ export default async function DashboardPage({
       weekday: 'long',
       month: 'long',
       day: 'numeric',
-      year: 'numeric',
     }).format(
       new Date(
         `${selectedDate}T12:00:00`
@@ -171,31 +177,22 @@ export default async function DashboardPage({
     selectedDate === today
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+    <>
+      <main className="min-h-screen bg-gray-50 pb-24">
 
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-gray-500">
-              {isToday ? 'Today' : 'Daily Summary'}
-            </p>
+        <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6">
 
-            <h1 className="mt-1 text-3xl font-bold">
-              {formattedDate}
-            </h1>
+          <header className="flex items-start justify-between gap-4">
 
-            <p className="mt-1 text-sm text-gray-500">
-              {user.email}
-            </p>
-          </div>
+            <div>
+              <p className="text-sm text-gray-500">
+                {isToday ? 'Today' : 'Daily Summary'}
+              </p>
 
-          <div className="flex gap-2">
-            <Link
-              href="/settings"
-              className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
-            >
-              Settings
-            </Link>
+              <h1 className="mt-1 text-2xl font-bold">
+                {formattedDate}
+              </h1>
+            </div>
 
             <form action={logout}>
               <button
@@ -205,330 +202,321 @@ export default async function DashboardPage({
                 Sign Out
               </button>
             </form>
-          </div>
-        </header>
 
-        {/* DATE NAVIGATION */}
+          </header>
 
-        <section className="mt-6 rounded-2xl bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
+          {/* DATE NAV */}
+
+          <section className="mt-5 flex items-center justify-between rounded-xl bg-white p-3 shadow-sm">
 
             <Link
               href={`/dashboard?date=${previousDate}`}
-              className="rounded-lg border px-4 py-2 text-sm font-semibold"
+              className="rounded-lg border px-3 py-2 text-sm font-semibold"
             >
-              ← Previous
+              ←
             </Link>
 
-            {!isToday && (
+            {!isToday ? (
               <Link
                 href="/dashboard"
-                className="text-sm font-semibold underline"
+                className="text-sm font-semibold"
               >
                 Today
               </Link>
+            ) : (
+              <span className="text-sm font-semibold">
+                Today
+              </span>
             )}
 
             {nextDate <= today ? (
               <Link
                 href={`/dashboard?date=${nextDate}`}
-                className="rounded-lg border px-4 py-2 text-sm font-semibold"
+                className="rounded-lg border px-3 py-2 text-sm font-semibold"
               >
-                Next →
+                →
               </Link>
             ) : (
               <button
                 disabled
-                className="rounded-lg border px-4 py-2 text-sm font-semibold text-gray-300"
+                className="rounded-lg border px-3 py-2 text-sm text-gray-300"
               >
-                Next →
+                →
               </button>
             )}
 
-          </div>
-        </section>
+          </section>
 
-        {/* CALORIES */}
+          {/* CALORIES */}
 
-        <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+          <section className="mt-5 rounded-2xl bg-white p-6 shadow-sm">
 
-          <div className="text-center">
+            <div className="text-center">
 
-            <p className="text-sm uppercase tracking-wide text-gray-500">
-              Calories Remaining
-            </p>
+              <p className="text-sm font-medium uppercase tracking-wide text-gray-500">
+                Calories Remaining
+              </p>
 
-            <p
-              className={`mt-2 text-5xl font-bold ${
-                remainingCalories < 0
-                  ? 'text-red-600'
-                  : ''
-              }`}
-            >
-              {Math.round(remainingCalories)}
-            </p>
-
-          </div>
-
-          <div className="mt-8 grid grid-cols-3 divide-x text-center">
-
-            <StatSmall
-              value={calorieTarget}
-              label="Goal"
-            />
-
-            <StatSmall
-              value={caloriesConsumed}
-              label="Food"
-            />
-
-            <StatSmall
-              value={exerciseCalories}
-              label="Exercise"
-            />
-
-          </div>
-
-          <div className="mt-6 border-t pt-4">
-
-            <div className="flex justify-between text-sm">
-
-              <span className="text-gray-500">
-                Net calories
-              </span>
-
-              <span className="font-semibold">
-                {Math.round(netCalories)}
-              </span>
+              <p
+                className={`mt-2 text-5xl font-bold ${
+                  remainingCalories < 0
+                    ? 'text-red-600'
+                    : ''
+                }`}
+              >
+                {Math.round(remainingCalories)}
+              </p>
 
             </div>
 
-          </div>
+            <div className="mt-7 grid grid-cols-3 divide-x text-center">
 
-        </section>
+              <StatSmall
+                value={calorieTarget}
+                label="Goal"
+              />
 
-        {/* MACROS */}
+              <StatSmall
+                value={caloriesConsumed}
+                label="Food"
+              />
 
-        <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+              <StatSmall
+                value={exerciseCalories}
+                label="Exercise"
+              />
 
-          <h2 className="text-xl font-semibold">
-            Macros
-          </h2>
+            </div>
 
-          <div className="mt-5 space-y-5">
+            <div className="mt-5 border-t pt-4">
 
-            <MacroRow
-              label="Protein"
-              current={protein}
-              target={proteinTarget}
-            />
+              <div className="flex justify-between text-sm">
 
-            <MacroRow
-              label="Carbs"
-              current={carbs}
-              target={carbTarget}
-            />
+                <span className="text-gray-500">
+                  Net calories
+                </span>
 
-            <MacroRow
-              label="Fat"
-              current={fat}
-              target={fatTarget}
-            />
+                <span className="font-semibold">
+                  {Math.round(netCalories)}
+                </span>
 
-          </div>
+              </div>
 
-        </section>
+            </div>
 
-        {/* WEIGHT */}
+          </section>
 
-        <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+          {/* MACROS */}
 
-          <div className="flex items-center justify-between">
+          <section className="mt-5 rounded-2xl bg-white p-6 shadow-sm">
 
-            <div>
+            <h2 className="text-lg font-semibold">
+              Macros
+            </h2>
 
-              <p className="text-sm text-gray-500">
-                Weight
-              </p>
+            <div className="mt-5 space-y-5">
 
-              <p className="mt-1 text-3xl font-bold">
-                {currentWeight != null
-                  ? `${currentWeight.toFixed(1)} lb`
-                  : '—'}
-              </p>
+              <MacroRow
+                label="Protein"
+                current={protein}
+                target={proteinTarget}
+              />
 
-              {goalWeight != null && (
-                <p className="mt-1 text-sm text-gray-500">
-                  Goal {goalWeight.toFixed(1)} lb
+              <MacroRow
+                label="Carbs"
+                current={carbs}
+                target={carbTarget}
+              />
+
+              <MacroRow
+                label="Fat"
+                current={fat}
+                target={fatTarget}
+              />
+
+            </div>
+
+          </section>
+
+          {/* WEIGHT */}
+
+          <section className="mt-5 rounded-2xl bg-white p-6 shadow-sm">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-sm text-gray-500">
+                  Current Weight
                 </p>
-              )}
 
-            </div>
+                <p className="mt-1 text-3xl font-bold">
+                  {currentWeight != null
+                    ? `${currentWeight.toFixed(1)} lb`
+                    : '—'}
+                </p>
 
-            <div className="flex flex-col gap-2">
+                {goalWeight != null && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Goal {goalWeight.toFixed(1)} lb
+                  </p>
+                )}
 
-              {isToday && (
-                <Link
-                  href="/weight"
-                  className="rounded-lg bg-black px-4 py-2 text-center text-sm font-semibold text-white"
-                >
-                  Log Weight
-                </Link>
-              )}
+              </div>
 
               <Link
                 href="/progress"
-                className="rounded-lg border px-4 py-2 text-center text-sm font-semibold"
+                className="rounded-lg border px-4 py-2 text-sm font-semibold"
               >
-                View Progress
+                View
               </Link>
 
             </div>
 
+          </section>
+
+          {/* FOOD */}
+
+          <div className="mt-7 flex items-center justify-between">
+
+            <h2 className="text-xl font-bold">
+              Food
+            </h2>
+
+            {isToday && (
+              <Link
+                href="/food"
+                className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white"
+              >
+                + Add
+              </Link>
+            )}
+
           </div>
 
-        </section>
+          <MealSection
+            title="Breakfast"
+            foods={breakfast}
+          />
 
-        {/* FOOD */}
+          <MealSection
+            title="Lunch"
+            foods={lunch}
+          />
 
-        <div className="mt-8 flex items-center justify-between">
+          <MealSection
+            title="Dinner"
+            foods={dinner}
+          />
 
-          <h2 className="text-2xl font-bold">
-            Food
-          </h2>
+          <MealSection
+            title="Snacks"
+            foods={snacks}
+          />
 
-          {isToday && (
-            <Link
-              href="/food"
-              className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white"
-            >
-              + Add Food
-            </Link>
-          )}
+          {/* EXERCISE */}
 
-        </div>
+          <div className="mt-7 flex items-center justify-between">
 
-        <MealSection
-          title="Breakfast"
-          foods={breakfast}
-        />
+            <h2 className="text-xl font-bold">
+              Exercise
+            </h2>
 
-        <MealSection
-          title="Lunch"
-          foods={lunch}
-        />
+            {isToday && (
+              <Link
+                href="/exercise"
+                className="rounded-lg border bg-white px-4 py-2 text-sm font-semibold"
+              >
+                + Add
+              </Link>
+            )}
 
-        <MealSection
-          title="Dinner"
-          foods={dinner}
-        />
+          </div>
 
-        <MealSection
-          title="Snacks"
-          foods={snacks}
-        />
+          <section className="mt-3 rounded-2xl bg-white p-6 shadow-sm">
 
-        {/* EXERCISE */}
+            {!exercises ||
+            exercises.length === 0 ? (
 
-        <div className="mt-8 flex items-center justify-between">
+              <p className="text-center text-sm text-gray-500">
+                No exercise logged.
+              </p>
 
-          <h2 className="text-2xl font-bold">
-            Exercise
-          </h2>
+            ) : (
 
-          {isToday && (
-            <Link
-              href="/exercise"
-              className="rounded-lg border bg-white px-4 py-2 text-sm font-semibold"
-            >
-              + Add Exercise
-            </Link>
-          )}
+              <div className="space-y-4">
 
-        </div>
+                {exercises.map((exercise) => (
 
-        <section className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
+                  <div
+                    key={exercise.id}
+                    className="border-b border-gray-100 pb-4 last:border-0"
+                  >
 
-          {!exercises ||
-          exercises.length === 0 ? (
+                    <div className="flex justify-between">
 
-            <p className="py-4 text-center text-gray-500">
-              No exercise logged.
-            </p>
+                      <div>
 
-          ) : (
+                        <p className="font-medium">
+                          {exercise.exercise_type}
+                        </p>
 
-            <div className="space-y-4">
+                        <p className="text-sm text-gray-500">
+                          {exercise.duration_minutes} minutes
+                        </p>
 
-              {exercises.map((exercise) => (
+                      </div>
 
-                <div
-                  key={exercise.id}
-                  className="border-b border-gray-100 pb-4 last:border-0"
-                >
-
-                  <div className="flex justify-between">
-
-                    <div>
-
-                      <p className="font-medium">
-                        {exercise.exercise_type}
-                      </p>
-
-                      <p className="text-sm text-gray-500">
-                        {exercise.duration_minutes} minutes
+                      <p className="font-semibold">
+                        {exercise.calories_burned} cal
                       </p>
 
                     </div>
 
-                    <p className="font-semibold">
-                      {exercise.calories_burned} cal
-                    </p>
+                    <div className="mt-3 flex gap-4">
 
-                  </div>
-
-                  <div className="mt-3 flex gap-3">
-
-                    <Link
-                      href={`/exercise/${exercise.id}/edit`}
-                      className="text-sm font-semibold underline"
-                    >
-                      Edit
-                    </Link>
-
-                    <form action={deleteExercise}>
-
-                      <input
-                        type="hidden"
-                        name="id"
-                        value={exercise.id}
-                      />
-
-                      <button
-                        type="submit"
-                        className="text-sm font-semibold text-red-600 underline"
+                      <Link
+                        href={`/exercise/${exercise.id}/edit`}
+                        className="text-sm font-semibold"
                       >
-                        Delete
-                      </button>
+                        Edit
+                      </Link>
 
-                    </form>
+                      <form action={deleteExercise}>
+
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={exercise.id}
+                        />
+
+                        <button
+                          type="submit"
+                          className="text-sm font-semibold text-red-600"
+                        >
+                          Delete
+                        </button>
+
+                      </form>
+
+                    </div>
 
                   </div>
 
-                </div>
+                ))}
 
-              ))}
+              </div>
 
-            </div>
+            )}
 
-          )}
+          </section>
 
-        </section>
+        </div>
 
-        <div className="h-12" />
+      </main>
 
-      </div>
-    </main>
+      <BottomNav />
+    </>
   )
 }
 
@@ -542,16 +530,17 @@ function MealSection({
   const total =
     foods.reduce(
       (sum, food) =>
-        sum + Number(food.calories || 0),
+        sum +
+        Number(food.calories || 0),
       0
     )
 
   return (
-    <section className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
+    <section className="mt-3 rounded-2xl bg-white p-5 shadow-sm">
 
       <div className="flex justify-between">
 
-        <h3 className="text-lg font-semibold">
+        <h3 className="font-semibold">
           {title}
         </h3>
 
@@ -563,7 +552,7 @@ function MealSection({
 
       {foods.length === 0 ? (
 
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-3 text-sm text-gray-400">
           Nothing logged.
         </p>
 
@@ -578,7 +567,7 @@ function MealSection({
               className="border-b border-gray-100 pb-4 last:border-0"
             >
 
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
 
                 <div>
 
@@ -602,17 +591,17 @@ function MealSection({
 
                 </div>
 
-                <p className="font-semibold">
+                <p className="whitespace-nowrap font-semibold">
                   {Math.round(Number(food.calories || 0))} cal
                 </p>
 
               </div>
 
-              <div className="mt-3 flex gap-3">
+              <div className="mt-3 flex gap-4">
 
                 <Link
                   href={`/food/${food.id}/edit`}
-                  className="text-sm font-semibold underline"
+                  className="text-sm font-semibold"
                 >
                   Edit
                 </Link>
@@ -627,7 +616,7 @@ function MealSection({
 
                   <button
                     type="submit"
-                    className="text-sm font-semibold text-red-600 underline"
+                    className="text-sm font-semibold text-red-600"
                   >
                     Delete
                   </button>
@@ -658,7 +647,7 @@ function StatSmall({
   return (
     <div>
 
-      <p className="text-2xl font-semibold">
+      <p className="text-xl font-semibold">
         {Math.round(value)}
       </p>
 
